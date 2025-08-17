@@ -1,32 +1,31 @@
 const notification = document.getElementById("notification");
-
-// Simulated server URL (JSONPlaceholder posts endpoint)
 const SERVER_URL = "https://jsonplaceholder.typicode.com/posts"; // mock API
 
-// Function to fetch server data
-async function fetchServerQuotes() {
+// Fetch quotes from the server
+async function fetchQuotesFromServer() {
   try {
     const response = await fetch(SERVER_URL);
-    const serverData = await response.json();
+    const data = await response.json();
 
-    // Simulate server quotes (take first 5 posts)
-    const serverQuotes = serverData.slice(0, 5).map(post => ({
+    // Simulate server quotes
+    const serverQuotes = data.slice(0, 5).map(post => ({
       text: post.title,
       category: "Server"
     }));
 
-    resolveConflicts(serverQuotes);
+    return serverQuotes;
   } catch (err) {
-    console.error("Failed to fetch server quotes:", err);
-    notification.textContent = "Failed to sync with server.";
+    console.error("Error fetching server quotes:", err);
+    notification.textContent = "Failed to fetch quotes from server.";
+    return [];
   }
 }
 
-// Simple conflict resolution: server data takes precedence
-function resolveConflicts(serverQuotes) {
+// Sync local quotes with server and resolve conflicts
+async function syncQuotes() {
+  const serverQuotes = await fetchQuotesFromServer();
   let conflictsResolved = false;
 
-  // Check each server quote, if not in local quotes, add it
   serverQuotes.forEach(sq => {
     if (!quotes.some(lq => lq.text === sq.text && lq.category === sq.category)) {
       quotes.push(sq);
@@ -39,18 +38,29 @@ function resolveConflicts(serverQuotes) {
     populateCategories();
     filterQuotes();
     notification.textContent = "Quotes updated from server!";
-    setTimeout(() => (notification.textContent = ""), 5000); // clear after 5s
+    setTimeout(() => (notification.textContent = ""), 5000);
+  }
+
+  // Optional: simulate posting local changes to server
+  try {
+    await fetch(SERVER_URL, {
+      method: "POST",
+      body: JSON.stringify(quotes),
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (err) {
+    console.error("Error posting quotes to server:", err);
   }
 }
 
-// Periodic syncing (every 30 seconds)
-setInterval(fetchServerQuotes, 30000);
+// Periodically sync every 30 seconds
+setInterval(syncQuotes, 30000);
 
-// Optional: Manual sync button
+// Manual sync button
 const syncBtn = document.createElement("button");
 syncBtn.textContent = "Sync Now";
-syncBtn.addEventListener("click", fetchServerQuotes);
+syncBtn.addEventListener("click", syncQuotes);
 document.body.appendChild(syncBtn);
 
 // Initial sync on page load
-fetchServerQuotes();
+syncQuotes();
