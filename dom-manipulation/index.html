@@ -25,7 +25,7 @@
       font-size: 0.9rem;
       color: #555;
     }
-    input {
+    input, select {
       padding: 8px;
       margin: 5px;
       border-radius: 5px;
@@ -49,6 +49,15 @@
 <body>
   <h1>Dynamic Quote Generator</h1>
 
+  <!-- Category Filter -->
+  <div>
+    <label for="categoryFilter">Filter by Category:</label>
+    <select id="categoryFilter">
+      <option value="all">All Categories</option>
+    </select>
+  </div>
+
+  <!-- Quote Display -->
   <div id="quoteDisplay"></div>
   <button id="newQuote">Show New Quote</button>
 
